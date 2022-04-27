@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+<header class="header-container">
+    <div class="container row-container header-cont">
+        <button class="bold-text theme-btn common-btn dark">Dark</button>
+        <button class="bold-text theme-btn common-btn light">Light</button>
+        <button class="bold-text theme-btn common-btn ocean">Ocean</button>
+        <button class="bold-text theme-btn common-btn fire">Fire</button>
+        <button class="bold-text theme-btn common-btn forest">Forest</button>
+    </div>
+</header>
+<div class="main container">
+    <h2 class="white-text text head-text">Pomodoro Timer</h2>
+    <div class="content container">
+        <div class="partial top container">
+            <h4 class="white-text bold-text text timer-name">Session time</h4>
+            <p class="white-text text timer">00:00</p>
+            <div class="container row-container buttons">
+                <button class="button btn-start bold-text common-btn main-btn">Start</button>
+                <button class="button btn-reset bold-text common-btn main-btn">Reset</button>
+            </div>
+        </div>
+            <div class="partial bottom container row-container">
+                <div class="container bottom-holder">
+                    <p class="head bold-text text">Session Length</p>
+                    <div class="container set-time-container row-container btm">
+                        <button class="time-button bold-text common-btn session-inc-btn main-btn">+</button>
+                        <p class="time-display session-time-display">00:00</p>
+                        <button class="time-button bold-text common-btn session-dec-btn main-btn">-</button>
+                    </div>
+                </div>
+                <div class="container bottom-holder">
+                    <p class="head bold-text text">Break Length</p>
+                    <div class="container set-time-container row-container btm">
+                        <button class="time-button bold-text common-btn break-inc-btn main-btn">+</button>
+                        <p class="time-display break-time-display">00:00</p>
+                        <button class="time-button bold-text common-btn break-dec-btn main-btn">-</button>
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+<audio src="audio/audio.mp3"></audio>
+</body>
+<script src="main.js"></script>
+</html>
