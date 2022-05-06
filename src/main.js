@@ -9,43 +9,42 @@ const breakTimeDisplay = document.querySelector('.break-time-display');
 let timerName = document.querySelector('.timer-name');
 let timer = document.querySelector('.timer');
 const audio = document.querySelector('audio');
-
-let sessionTime = {
-    minutes: 0,
-    seconds: 0,
-    name: 'Session time',
-    display: sessionTimeDisplay
-}
-
-const breakTime = {
-    minutes: 0,
-    seconds: 0,
-    name: 'Break time',
-    display: breakTimeDisplay
-}
+let interval = null;
+let timeout = null;
+let sessionTime;
+let breakTime;
 
 const timers = [timer, sessionTimeDisplay, breakTimeDisplay];
 
 
+window.onload = function () {
+    sessionTime = JSON.parse(localStorage.getItem('Session time')) || {
+        minutes: 0,
+        seconds: 0,
+        name: 'Session time',
+        display: sessionTimeDisplay
+    }
 
-// function onLoad(sessionName) {
-//     if (sessionName === 'Session time') {
-//         timer.innerHTML = `${timeLength(JSON.parse(localStorage.getItem('Session time')).minutes)}:${timeLength(JSON.parse(localStorage.getItem('Session time')).seconds)}`;
-//         sessionTime.display.innerHTML = `${timeLength(sessionTime.minutes)}:${timeLength(sessionTime.seconds)}`;
-//     } else if (sessionName === 'Break time') {
-//         timer.innerHTML = `${timeLength(breakTime.minutes)}:${timeLength(breakTime.seconds)}`;
-//         sessionTime.display.innerHTML = `${timeLength(breakTime.minutes)}:${timeLength(breakTime.seconds)}`;
-//     } else {
-//         timer.innerHTML = `00:00`;
-//         sessionTime.display.innerHTML = `00:00`;
-//     }
-// }
-//
-// window.onload = function () {
-//     onLoad(JSON.parse(localStorage.getItem('lastName')));
-// }
+    breakTime = JSON.parse(localStorage.getItem('Break time')) || {
+        minutes: 0,
+        seconds: 0,
+        name: 'Break time',
+        display: breakTimeDisplay
+    }
 
-// timer.innerHTML = JSON.parse(localStorage.getItem(session.name)) || '00:00'
+    sessionTimeDisplay.innerHTML = sessionLength(sessionTime);
+    breakTimeDisplay.innerHTML = sessionLength(breakTime);
+
+    if (localStorage.getItem('lastName') === 'Session time') {
+        timer.innerHTML = sessionLength(sessionTime);
+        timerName.innerHTML = sessionTime.name
+    } else if (localStorage.getItem('lastName') === 'Break time') {
+        timer.innerHTML = sessionLength(breakTime);
+        timerName.innerHTML = breakTime.name;
+    } else {
+        timerName.innerHTML = 'Session time'
+    }
+}
 
 addSessionTimeBtn.addEventListener('click', function () {
     changeTime(sessionTime, '+');
@@ -63,21 +62,29 @@ reduceBreakTimeBtn.addEventListener('click', function () {
     changeTime(breakTime, '-');
 })
 
-start.addEventListener('click', () => {
 
+
+function startFunc() {
     if (start.innerHTML === 'Start') {
         startCountdown(sessionTime);
         timeout = setTimeout(function () {
             startCountdown(breakTime);
             timerName.innerHTML = breakTime.name;
             timer.innerHTML = sessionLength(breakTime);
-        }, parseInt(sessionTime.seconds) * 1000 + 2000);
+        }, (sessionTime.minutes * 60 + parseInt(sessionTime.seconds) + 1) * 1000);
         start.innerHTML = 'Stop';
     } else {
         clearInterval(interval);
         clearTimeout(timeout);
         start.innerHTML = 'Start';
     }
+}
+
+
+
+
+start.addEventListener('click', () => {
+    startFunc();
 })
 
 reset.addEventListener('click', () => {
@@ -94,48 +101,54 @@ reset.addEventListener('click', () => {
     audio.pause();
     clearInterval(interval);
     clearTimeout(timeout);
+    localStorage.clear();
 })
 
 function changeTime(session, operation) {
     timerName.innerHTML = session.name;
-    session.display.innerHTML = `${timeLength(session.minutes)}:${timeLength(session.seconds + 1)}`;
-    // sessionLength(session);
+    // sessionTimeDisplay.innerHTML = `kk + ${sessionTime.minutes}`
     if (operation === '+') {
-        session.seconds += 1;
+        session.minutes += 1;
         if (session.seconds > 59) {
             session.seconds = 0;
             session.minutes += 1;
         }
     } else {
-        session.seconds -= 1;
-        session.display.innerHTML = sessionLength(session);
+        // session.minutes -= 1;
+        // session.display.innerHTML = sessionLength(session);
         if (session.minutes > 0 && session.seconds < 0) {
             session.minutes -= 1;
             session.seconds = 59;
         } else if (session.minutes === 0 && session.seconds < 1) {
+            session.minutes = 0;
             session.seconds = 0;
-            session.display.innerHTML = sessionLength(session);
+            // session.display.innerHTML = sessionLength(session);
+        } else {
+            session.minutes -= 1;
+            // session.display.innerHTML = sessionLength(session);
         }
+    }
+
+
+    if (session.name === 'Session time') {
+        sessionTimeDisplay.innerHTML = `${timeLength(session.minutes)}:${timeLength(session.seconds)}`
+    } else {
+        breakTimeDisplay.innerHTML = sessionLength(breakTime);
     }
 
     timer.innerHTML = sessionLength(session);
 
-    // let lastName = session.name;
-    //
-    // localStorage.setItem('lastName', session.name);
-    //
-    // localStorage.setItem(`${session.name}`, JSON.stringify(session));
+    console.log(session.minutes);
+    console.log(session.display.innerHTML);
 
-    // if (session.name === 'Session time') {
-    //     localStorage.setItem('Session time', JSON.stringify(sessionTime));
-    // } else {
-    //     localStorage.setItem('Break time', JSON.stringify(breakTime));
-    // }
+    localStorage.setItem('lastName', session.name);
+    updateStorage();
 }
 
-let interval = null;
-let timeout = null;
-
+function updateStorage() {
+    localStorage.setItem('Session time', JSON.stringify(sessionTime));
+    localStorage.setItem('Break time', JSON.stringify(breakTime));
+}
 
 function startCountdown(session) {
 
@@ -143,19 +156,23 @@ function startCountdown(session) {
         if (session.seconds > 0) {
             session.seconds--;
             timerName.innerHTML = session.name;
+            // console.log(document.visibilityState)
         } else if (session.minutes > 0 && session.seconds <= 0) {
             session.minutes--;
             session.seconds = 59;
         } else if (session.minutes === 0 && session.seconds < 1) {
             session.seconds = 0;
             audio.play();
-            timer.innerHTML = '00:00';
-            session.display.innerHTML = '00:00';
             clearInterval(interval);
         }
-        timer.innerHTML = sessionLength(session);
-        session.display.innerHTML = sessionLength(session);
 
+        timer.innerHTML = sessionLength(session);
+        if (session.name === 'Session time') {
+            sessionTimeDisplay.innerHTML = `${timeLength(session.minutes)}:${timeLength(session.seconds)}`
+        } else {
+            breakTimeDisplay.innerHTML = sessionLength(breakTime);
+        }
+        updateStorage();
     }, 1000);
 
     // if (start.innerHTML === 'Stop') {
@@ -172,6 +189,21 @@ function sessionLength(session) {
 }
 
 
+
+
+
+
+// const colors = ['black', '#73b0f5', '#4287f5', '#f03b0a', '#39cc3e']
+//
+// const themes = [dark, light, ocean, fire, forest];
+//
+// for (let i = 0; i < themes.length; i++) {
+//     themes[i].addEventListener('click', () => {
+//         document.body.style.backgroundColor = colors[i];
+//         themes[i].style.backgroundColor = colors[i];
+//
+//     })
+// }
 
 
 const dark = document.querySelector('.dark');
@@ -192,3 +224,39 @@ dark.addEventListener('click', () => {
     dark.style.backgroundColor = 'black';
 })
 
+// function createTemplate() {
+//     return `<div>
+//                 <button>Test button</button>
+//             </div>`
+// }
+
+// if (document.visibilityState === 'hidden') {
+//     this.window.createTemplate();
+// }
+
+
+// document.addEventListener('visibilitychange', () => {
+//     if (document.visibilityState === 'hidden') {
+//         alert('alert!!!')
+//         timerName.innerHTML = 'hh'
+//         console.log(document.visibilityState)
+//         let iframe = document.createElement('iframe');
+//         iframe.style.width = '200px';
+//         iframe.style.height = '200px';
+//         iframe.style.border = 'red solid 5px';
+//
+//
+//         document.body.appendChild(iframe);
+//     }
+// })
+//
+// if (document.visibilityState === 'hidden') {
+//     timerName.innerHTML = 'hh'
+//     console.log(document.visibilityState)
+//     let iframe = document.createElement('iframe');
+//     iframe.style.width = '200px';
+//     iframe.style.height = '200px';
+//     iframe.style.border = 'red solid 5px';
+//     document.appendChild(iframe)
+//     // document.body.appendChild(iframe);
+// }
